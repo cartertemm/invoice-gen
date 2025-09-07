@@ -46,7 +46,7 @@ class OptionsDialog(wx.Dialog):
 		ok_btn.SetDefault()
 
 	def _load_settings(self):
-		api_key = config.get_api_key()
+		api_key = config.get('api_key')
 		if api_key:
 			self.api_key_ctrl.SetValue(api_key)
 			self.status_text.SetLabel("API key loaded from saved settings")
@@ -73,10 +73,10 @@ class OptionsDialog(wx.Dialog):
 	def _on_ok(self, event):
 		api_key = self.api_key_ctrl.GetValue().strip()
 		if api_key:
-			config.set_api_key(api_key)
+			config.set('api_key', api_key)
 			self.status_text.SetLabel("API key saved successfully")
 		else:
-			config.clear_api_key()
+			config.delete('api_key')
 			self.status_text.SetLabel("API key cleared")
 		self.EndModal(wx.ID_OK)
 
@@ -268,16 +268,12 @@ class InvoiceFrame(wx.Frame):
 		"""Build the entire UI using consistent patterns."""
 		main_sizer = wx.BoxSizer(wx.VERTICAL)
 		form_sizer = wx.BoxSizer(wx.VERTICAL)
-
 		self._create_section(form_sizer, None, 'text')
 		self._create_section(form_sizer, None, 'multiline') 
 		self._create_section(form_sizer, None, 'numeric')
 		self._create_section(form_sizer, None, 'date')
-
-
 		self._create_display_options(form_sizer)
 		self._create_item_section(form_sizer)
-
 		main_sizer.Add(form_sizer, 0, wx.EXPAND | wx.ALL, 12)
 		self._create_items_list(main_sizer)
 		self._create_generation_controls(main_sizer)
@@ -287,7 +283,6 @@ class InvoiceFrame(wx.Frame):
 		"""Create display options section."""
 		section_label = wx.StaticText(self.panel, label="Invoice Display Options")
 		parent_sizer.Add(section_label, 0, wx.ALL, 4)
-
 		tax_row = wx.BoxSizer(wx.HORIZONTAL)
 		tax_label = wx.StaticText(self.panel, label="Tax display")
 		self.tax_field = wx.Choice(self.panel, choices=['Hide', 'Show', 'Percentage'], size=(100,-1))
@@ -295,7 +290,6 @@ class InvoiceFrame(wx.Frame):
 		tax_row.Add(tax_label, 0, wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, 8)
 		tax_row.Add(self.tax_field, 0)
 		parent_sizer.Add(tax_row, 0, wx.EXPAND | wx.ALL, 4)
-
 		for field_name, label_text in [('discounts_field', 'Show discounts line'), ('shipping_field', 'Show shipping line')]:
 			row = wx.BoxSizer(wx.HORIZONTAL)
 			label = wx.StaticText(self.panel, label=field_name.replace('_field', '').title())
@@ -344,7 +338,6 @@ class InvoiceFrame(wx.Frame):
 		gen_btn = wx.Button(self.panel, label="Generate Invoice")
 		gen_btn.Bind(wx.EVT_BUTTON, self.on_generate)
 		parent_sizer.Add(gen_btn, 0, wx.ALL, 10)
-
 		self.message = wx.StaticText(self.panel, label="", size=(400,25))
 		parent_sizer.Add(self.message, 0, wx.ALL | wx.EXPAND, 10)
 
@@ -354,14 +347,12 @@ class InvoiceFrame(wx.Frame):
 		quantity = self.item_quantity.GetValue()
 		unit_cost = self.item_unit_cost.GetValue()
 		discount = self.item_discount.GetValue()
-
 		if not name:
 			self.display("Error: Item name is required")
 			return
 		if unit_cost <= 0:
 			self.display("Error: Unit cost must be greater than 0")
 			return
-
 		item = {
 			'name': name,
 			'quantity': quantity,
@@ -389,47 +380,40 @@ class InvoiceFrame(wx.Frame):
 		dialog = OptionsDialog(self)
 		result = dialog.ShowModal()
 		dialog.Destroy()
-		
 		if result == wx.ID_OK:
 			self.display("Settings updated")
-	
+
 	def _on_exit(self, event):
 		"""Handle exit menu item."""
 		self.Close()
-	
+
 	def _on_save_template(self, event):
 		"""Handle save template menu item."""
 		dialog = SaveTemplateDialog(self)
 		result = dialog.ShowModal()
-		
 		if result == wx.ID_OK:
 			template_name = dialog.get_template_name()
 			field_values = self._get_current_field_values()
-			
 			if template_manager.save_template(template_name, field_values):
 				self.display(f"Template '{template_name}' saved successfully")
 			else:
 				self.display(f"Failed to save template '{template_name}'")
-		
 		dialog.Destroy()
-	
+
 	def _on_load_template(self, event):
 		"""Handle load template menu item."""
 		dialog = LoadTemplateDialog(self)
 		result = dialog.ShowModal()
-		
 		if result == wx.ID_OK:
 			template_filename = dialog.get_selected_template()
 			field_values = template_manager.load_template(template_filename)
-			
 			if field_values:
 				self._set_field_values(field_values)
 				self.display(f"Template loaded successfully")
 			else:
 				self.display("Failed to load template")
-		
 		dialog.Destroy()
-	
+
 	def _on_manage_templates(self, event):
 		"""Handle manage templates menu item."""
 		dialog = ManageTemplatesDialog(self)
@@ -500,7 +484,7 @@ class InvoiceFrame(wx.Frame):
 				discounts=self.discounts_field.GetValue(),
 				shipping=self.shipping_field.GetValue()
 			)
-			api_key = config.get_api_key()
+			api_key = config.get('api_key')
 			api = create_api_client(api_key)
 			validation_errors = api.validate_invoice(invoice)
 			if validation_errors:
@@ -515,23 +499,17 @@ class InvoiceFrame(wx.Frame):
 	def display(self, message):
 		speak(message)
 		self.message.SetLabel(message)
-	
+
 	def _get_current_field_values(self):
 		"""Get current values from all form fields."""
 		values = {}
-		
-		# Get text and multiline fields
 		for field_type in ['text', 'multiline']:
 			for field_name in self.field_configs[field_type].keys():
 				if field_name in self.fields:
 					values[field_name] = self.fields[field_name].GetValue()
-		
-		# Get numeric fields
 		for field_name in self.field_configs['numeric'].keys():
 			if field_name in self.fields:
 				values[field_name] = self.fields[field_name].GetValue()
-		
-		# Get date fields
 		for field_name in self.field_configs['date'].keys():
 			if field_name in self.fields:
 				date_ctrl = self.fields[field_name]
@@ -539,31 +517,23 @@ class InvoiceFrame(wx.Frame):
 				if date_value.IsValid():
 					py_date = date(date_value.GetYear(), date_value.GetMonth() + 1, date_value.GetDay())
 					values[field_name] = py_date.isoformat()
-		
-		# Get display options
 		values['tax_display'] = self.tax_field.GetSelection()
 		values['discounts_display'] = self.discounts_field.GetValue()
 		values['shipping_display'] = self.shipping_field.GetValue()
-		
 		return values
-	
+
 	def _set_field_values(self, values):
 		"""Set form fields from template values."""
-		# Set text and multiline fields
 		for field_type in ['text', 'multiline']:
 			for field_name in self.field_configs[field_type].keys():
 				if field_name in values and field_name in self.fields:
 					self.fields[field_name].SetValue(str(values[field_name]))
-		
-		# Set numeric fields
 		for field_name in self.field_configs['numeric'].keys():
 			if field_name in values and field_name in self.fields:
 				try:
 					self.fields[field_name].SetValue(float(values[field_name]))
 				except (ValueError, TypeError):
 					pass
-		
-		# Set date fields
 		for field_name in self.field_configs['date'].keys():
 			if field_name in values and field_name in self.fields:
 				try:
@@ -574,17 +544,13 @@ class InvoiceFrame(wx.Frame):
 						self.fields[field_name].SetValue(wx_date)
 				except (ValueError, TypeError):
 					pass
-		
-		# Set display options
 		if 'tax_display' in values:
 			try:
 				self.tax_field.SetSelection(int(values['tax_display']))
 			except (ValueError, TypeError):
 				pass
-		
 		if 'discounts_display' in values:
 			self.discounts_field.SetValue(bool(values['discounts_display']))
-		
 		if 'shipping_display' in values:
 			self.shipping_field.SetValue(bool(values['shipping_display']))
 
