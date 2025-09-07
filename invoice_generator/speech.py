@@ -1,6 +1,7 @@
 from accessible_output2 import outputs
 from accessible_output2.outputs.base import Output
 
+
 _output: Output | None = None
 
 
@@ -17,6 +18,10 @@ def create_speech_output(prefer_tts: bool = False) -> Output | None:
 
 
 def speak(text: str, interrupt: bool = True, prefer_tts: bool = False) -> bool:
+	"""Speak the provided text, optionally interrupting the current announcement.
+	If an `Output` object does not exist, one will be initialized automatically.
+	In practice, this is the only function one should need to support outputting to a screen reader or the system TTS engine.
+	"""
 	global _output
 	if _output is None:
 		_output = create_speech_output(prefer_tts)
