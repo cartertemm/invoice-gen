@@ -11,3 +11,4 @@ wheels/
 
 # Application specific files
 config.json
+invoice*.pdf
