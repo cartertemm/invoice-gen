@@ -1,12 +1,12 @@
 import wx
 import wx.adv
 from datetime import date
-from invoice_api import *
-from config import config
-from speech import speak
-from templates import template_manager
-from template_dialogs import SaveTemplateDialog, LoadTemplateDialog, ManageTemplatesDialog
-from utils import parse_wx_date_to_python, python_date_to_wx_date
+from .invoice_api import *
+from .config import config
+from .speech import speak
+from .templates import template_manager
+from .template_dialogs import SaveTemplateDialog, LoadTemplateDialog, ManageTemplatesDialog
+from .utils import parse_wx_date_to_python, python_date_to_wx_date
 
 
 class OptionsDialog(wx.Dialog):
@@ -594,8 +594,3 @@ class InvoiceApp(wx.App):
 		frame = InvoiceFrame()
 		frame.Show()
 		return True
-
-
-if __name__ == '__main__':
-	app = InvoiceApp()
-	app.MainLoop()

@@ -1,11 +1,5 @@
-"""
-Template Dialog Components
-
-UI dialogs for template management operations.
-"""
-
 import wx
-from templates import template_manager
+from .templates import template_manager
 
 
 class SaveTemplateDialog(wx.Dialog):

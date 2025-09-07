@@ -3,7 +3,7 @@ import os
 import os
 from typing import Dict, List, Optional, Any
 from datetime import date
-from utils import sanitize_filename, prepare_for_json_serialization, safe_json_load, safe_json_save, ensure_directory
+from .utils import sanitize_filename, prepare_for_json_serialization, safe_json_load, safe_json_save, ensure_directory
 
 
 class TemplateManager:
