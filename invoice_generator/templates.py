@@ -87,5 +87,4 @@ class TemplateManager:
 		return processed
 
 
-
 template_manager = TemplateManager()

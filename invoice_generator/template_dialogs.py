@@ -14,7 +14,6 @@ class SaveTemplateDialog(wx.Dialog):
 	def _create_ui(self):
 		"""Build the save template dialog UI."""
 		main_sizer = wx.BoxSizer(wx.VERTICAL)
-		# Template name input
 		name_label = wx.StaticText(self, label="Template Name:")
 		self.name_ctrl = wx.TextCtrl(self, size=(350, -1))
 		self.name_ctrl.SetToolTip("Enter a name for this template")
@@ -23,7 +22,6 @@ class SaveTemplateDialog(wx.Dialog):
 		# Status text
 		self.status_text = wx.StaticText(self, label="")
 		main_sizer.Add(self.status_text, 0, wx.ALL, 8)
-		# Buttons
 		btn_sizer = wx.StdDialogButtonSizer()
 		save_btn = wx.Button(self, wx.ID_OK, "Save")
 		cancel_btn = wx.Button(self, wx.ID_CANCEL, "Cancel")
@@ -36,7 +34,6 @@ class SaveTemplateDialog(wx.Dialog):
 		self.SetSizer(main_sizer)
 		self.Layout()
 		save_btn.SetDefault()
-		# Focus on name field
 		self.name_ctrl.SetFocus()
 
 	def _on_save(self, event):
@@ -70,10 +67,8 @@ class LoadTemplateDialog(wx.Dialog):
 	def _create_ui(self):
 		"""Build the load template dialog UI."""
 		main_sizer = wx.BoxSizer(wx.VERTICAL)
-		# Instructions
 		info_label = wx.StaticText(self, label="Select a template to load:")
 		main_sizer.Add(info_label, 0, wx.ALL, 8)
-		# Template list
 		self.template_list = wx.ListCtrl(self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
 		self.template_list.InsertColumn(0, "Name", width=200)
 		self.template_list.InsertColumn(1, "Created", width=100)
@@ -106,7 +101,6 @@ class LoadTemplateDialog(wx.Dialog):
 			index = self.template_list.InsertItem(i, template["name"])
 			self.template_list.SetItem(index, 1, template["created"])
 			self.template_list.SetItem(index, 2, str(template["field_count"]))
-			# Store template filename for loading
 			self.template_list.SetItemData(index, i)
 		self.templates = templates  # Keep reference for loading
 		self.status_text.SetLabel(f"Found {len(templates)} templates")
@@ -142,16 +136,13 @@ class ManageTemplatesDialog(wx.Dialog):
 	def _create_ui(self):
 		"""Build the template management dialog UI."""
 		main_sizer = wx.BoxSizer(wx.VERTICAL)
-		# Instructions
 		info_label = wx.StaticText(self, label="Manage your saved templates:")
 		main_sizer.Add(info_label, 0, wx.ALL, 8)
-		# Template list
 		self.template_list = wx.ListCtrl(self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
 		self.template_list.InsertColumn(0, "Name", width=250)
 		self.template_list.InsertColumn(1, "Created", width=120)
 		self.template_list.InsertColumn(2, "Fields", width=80)
 		main_sizer.Add(self.template_list, 1, wx.EXPAND | wx.ALL, 8)
-		# Action buttons
 		action_sizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.delete_btn = wx.Button(self, label="Delete Selected")
 		self.refresh_btn = wx.Button(self, label="Refresh")
@@ -185,7 +176,6 @@ class ManageTemplatesDialog(wx.Dialog):
 			index = self.template_list.InsertItem(i, template["name"])
 			self.template_list.SetItem(index, 1, template["created"])
 			self.template_list.SetItem(index, 2, str(template["field_count"]))
-			# Store template filename for deletion
 			self.template_list.SetItemData(index, i)
 		self.templates = templates  # Keep reference
 		self.status_text.SetLabel(f"Found {len(templates)} templates")
@@ -199,7 +189,6 @@ class ManageTemplatesDialog(wx.Dialog):
 			return
 		template_index = self.template_list.GetItemData(selection)
 		template = self.templates[template_index]
-		# Confirm deletion
 		dlg = wx.MessageDialog(self, 
 							   f"Are you sure you want to delete the template '{template['name']}'?",
 							   "Confirm Deletion",
