@@ -4,6 +4,7 @@ from datetime import date, datetime
 from enum import Enum
 import requests
 import json
+from .utils import sanitize_filename
 
 
 class InvoiceFormat(Enum):
@@ -212,30 +213,49 @@ class InvoiceGeneratorAPI:
 		if self.api_key:
 			self.session.headers["Authorization"] = f"Bearer {self.api_key}"
 
-	def generate_pdf(self, invoice: Invoice, output_path: str = "invoice.pdf") -> str:
+	def _generate_filename(self, invoice: Invoice, extension: str) -> str:
+		"""
+		Generate filename based on invoice number.
+		Args:
+			invoice: The invoice data
+			extension: File extension (without dot)
+		Returns:
+			Sanitized filename
+		"""
+		base_name = "invoice"
+		if invoice.number and invoice.number.strip():
+			base_name += f"_{invoice.number.strip()}"
+		filename = f"{base_name}.{extension}"
+		return sanitize_filename(filename)
+
+	def generate_pdf(self, invoice: Invoice, output_path: str = None) -> str:
 		"""
 		Generate a PDF invoice.
 		Args:
 			invoice: The invoice data to generate
-			output_path: Where to save the PDF file
+			output_path: Where to save the PDF file (if None, uses invoice number)
 		Returns:
 			Success message or error details
 		Raises:
 			requests.RequestException: On network or API errors
 		"""
+		if output_path is None:
+			output_path = self._generate_filename(invoice, "pdf")
 		return self._generate_invoice(invoice, InvoiceFormat.PDF, output_path)
 
-	def generate_ubl(self, invoice: Invoice, output_path: str = "invoice.xml") -> str:
+	def generate_ubl(self, invoice: Invoice, output_path: str = None) -> str:
 		"""
 		Generate an e-invoice in UBL format.
 		Args:
 			invoice: The invoice data to generate
-			output_path: Where to save the UBL XML file
+			output_path: Where to save the UBL XML file (if None, uses invoice number)
 		Returns:
 			Success message or error details
 		Raises:
 			requests.RequestException: On network or API errors
 		"""
+		if output_path is None:
+			output_path = self._generate_filename(invoice, "xml")
 		return self._generate_invoice(invoice, InvoiceFormat.UBL, output_path)
 
 	def _generate_invoice(self, invoice: Invoice, format_type: InvoiceFormat, output_path: str) -> str:
@@ -337,5 +357,5 @@ if __name__ == "__main__":
 	invoice.tax = 150.00
 	# Generate PDF
 	api = create_api_client("your-api-key-here")
-	result = api.generate_pdf(invoice, "my-invoice.pdf")
+	result = api.generate_pdf(invoice)
 	print(result)

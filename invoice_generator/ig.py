@@ -490,7 +490,7 @@ class InvoiceFrame(wx.Frame):
 			if validation_errors:
 				self.display("Validation errors: " + "; ".join(validation_errors))
 				return
-			msg = api.generate_pdf(invoice, "invoice.pdf")
+			msg = api.generate_pdf(invoice)
 			self.display(msg)
 		except Exception as e:
 			self.display(f"Error: {str(e)}")
