@@ -43,6 +43,7 @@ class InvoiceItem:
 	unit_cost: float
 	description: Optional[str] = None
 	discount: Optional[float] = None
+
 	def __post_init__(self):
 		if not self.name.strip():
 			raise ValueError("Item name cannot be empty")
@@ -52,11 +53,13 @@ class InvoiceItem:
 			raise ValueError("Unit cost cannot be negative")
 		if self.discount is not None and self.discount < 0:
 			raise ValueError("Discount cannot be negative")
+
 	def total_cost(self) -> float:
 		subtotal = self.quantity * self.unit_cost
 		if self.discount:
 			subtotal -= self.discount
 		return max(0, subtotal)
+
 	def to_dict(self) -> Dict[str, Any]:
 		result = {
 			"name": self.name,
@@ -76,6 +79,7 @@ class DisplayFields:
 	tax: Union[bool, str] = "%"  # True, False, or "%" for percentage
 	discounts: bool = False
 	shipping: bool = False
+
 	def to_dict(self) -> Dict[str, Union[bool, str]]:
 		"""Convert to API format."""
 		return {
@@ -187,12 +191,13 @@ class Invoice:
 class InvoiceGeneratorAPI:
 	"""Client for the invoice-generator.com API."""
 	BASE_URL = "https://invoice-generator.com"
-	def __init__(self, api_key: Optional[str] = None):
+
+	def __init__(self, api_key: str):
 		"""
 		Initialize the API client.
 		Args:
-			api_key: Optional API key for authenticated requests.
-					Without this, you're limited to the free tier.
+			api_key: API key for authenticated requests.
+				This used to be optional but is now required.
 		"""
 		self.api_key = api_key
 		self.session = requests.Session()
@@ -269,17 +274,14 @@ class InvoiceGeneratorAPI:
 			List of validation errors (empty if valid)
 		"""
 		errors = []
-		
 		# Check for required items
 		if not invoice.items:
 			errors.append("At least one item is required")
-		
 		try:
 			# This will raise ValueError for invalid data
 			invoice.to_dict()
 		except ValueError as e:
 			errors.append(str(e))
-		# Additional business logic validation
 		if invoice.due_date and invoice.date and invoice.due_date < invoice.date:
 			errors.append("Due date cannot be before invoice date")
 		if invoice.amount_paid > invoice.total():
