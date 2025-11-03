@@ -113,6 +113,8 @@ The application creates these files:
 
 ## Troubleshooting
 
+**"I can't adjust anything but the month in the date dropdowns with a keyboard" - Press the left and right arrow keys to move between month, date, and year (respectively). If you are using a screen reader there won't be any indicator that the values have changed, but you can always press the up and down arrows to set and confirm the value is correct. In short, this is a documented bug with `wx.adv.DatePickerCtrl` and not something we are able to control directly.
+
 **"Error: API key required"** - Set your key in File → Options
 
 **"Connection error"** - Check internet connection and invoice-generator.com accessibility
